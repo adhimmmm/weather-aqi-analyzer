@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend} from 'recharts';
 import "leaflet/dist/leaflet.css";
 
 // Perbaikan bug ikon marker Leaflet yang sering hilang saat di-bundle oleh Vite
@@ -23,7 +24,7 @@ function App() {
   // Fungsi reusable untuk mengambil data dari backend berdasarkan koordinat
   const fetchWeatherAndAir = (latitude, longitude) => {
     setLoading(true);
-    setError(null); // Bersihkan error lama setiap kali ganti lokasi
+    setError(null);
     fetch(`http://localhost:5000/api/weather?lat=${latitude}&lon=${longitude}`)
       .then((res) => {
         if (!res.ok) throw new Error("Gagal mengambil data dari server");
@@ -281,6 +282,31 @@ function App() {
               </div>
             </div>
           </main>
+
+          {/* KARTU BARU: GRAFIK TREN 24 JAM KE DEPAN */}
+<div className="w-full min-w-0 bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl overflow-hidden">
+  <h2 className="text-xs font-bold text-slate-400 tracking-widest uppercase mb-6 px-2">
+    📈 Tren Perubahan Suhu & Kelembapan (24 Jam Ke Depan)
+  </h2>
+  
+  {/* PERBAIKAN: Memberikan h-[300px] yang pasti pada div pembungkus ResponsiveContainer */}
+  <div className="w-full h-[300px] min-h-[300px] relative">
+    <ResponsiveContainer width="100%" height="100%">
+      <LineChart data={data.forecast_trend} margin={{ top: 10, right: 30, left: -10, bottom: 5 }}>
+        <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+        <XAxis dataKey="time" stroke="#64748b" fontSize={12} tickLine={false} dy={10} />
+        <YAxis stroke="#64748b" fontSize={12} tickLine={false} dx={-5} />
+        <Tooltip 
+          contentStyle={{ backgroundColor: '#020617', borderColor: '#1e293b', borderRadius: '12px' }}
+          labelStyle={{ color: '#94a3b8', fontWeight: 'bold' }}
+        />
+        <Legend wrapperStyle={{ fontSize: '12px', pt: '15px' }} />
+        <Line type="monotone" dataKey="temperature" name="Suhu (°C)" stroke="#3b82f6" strokeWidth={3} activeDot={{ r: 6 }} dot={{ r: 3 }} />
+        <Line type="monotone" dataKey="humidity" name="Kelembapan (%)" stroke="#10b981" strokeWidth={2} dot={false} />
+      </LineChart>
+    </ResponsiveContainer>
+  </div>
+</div>
 
           {/* PERBAIKAN 3: MEMASUKKAN KEMBALI STRUKTUR PETA INTERAKTIF YANG SEMPAT HILANG */}
           <div className="w-full bg-slate-900 border border-slate-800 rounded-3xl p-4 shadow-2xl">

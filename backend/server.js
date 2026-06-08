@@ -36,6 +36,22 @@ app.get('/api/weather', async (req, res) => {
         // hitung rekomendasi kegiatan harian
         const recommendations = generateRecommendations(aqiValue, temperature);
 
+        // saring data untuk ramalan cuaca untuk 24 jam ke depan
+        const forecastTrend = rawData.forecast.list.slice(0, 8).map((item) => {
+
+          const dateObject = new Date(item.dt * 1000);
+
+          const timeLabel = dateObject.toLocaleTimeString('id-ID', {
+            hour: '2-digit',
+            minute: '2-digit',
+          });
+          return {
+            time: timeLabel,
+            temperature: item.main.temp,
+            humidity: item.main.humidity
+          };
+        })
+
         // susun struktur data json yang bersih
         const cleanResponse = {
       status: "success",
@@ -53,6 +69,7 @@ app.get('/api/weather', async (req, res) => {
         aqi_label: recommendations.aqi_label,
         pm2_5: rawData.air.list[0].components.pm2_5
       },
+      forecast_trend: forecastTrend,
       recommendations: {
         status_level: recommendations.status_level,
         headline: recommendations.headline,
